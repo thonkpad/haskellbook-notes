@@ -1,0 +1,3 @@
+#+TITLE: Readme
+
+Notes for the book "Haskell Programming from First Principles"
