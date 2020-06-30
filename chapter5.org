@@ -179,37 +179,55 @@ triple x = tripleItYo x
        takes a tuple argument and returns the first value
 ** Determine the type
     1. (* 9) 6
+
        54
+
        ~:: Num a => a~
 
        head [(0, "doge"),(1,"kitteh")]
+
        (0, "doge")
+
        ~:: Num a => (a, [Char])~
 
        head [(0 :: Integer , "doge"),(1,"kitteh")]
+
        (0, "doge")
+
        ~:: (Integer, [Char])~
 
+
        if False then True else False
-       False
+
+        False
+
        ~:: Bool~
 
        length [1,2,3,4,5]
+
        5
+
        ~:: Int~
 
        (length [1,2,3,4]) > (length "TACOCAT")
+
        False
        ~:: Bool~
 
     2. x = 5
+
        y = x + 5
+
        w = y * 10
+
        ~w :: Num a => a~
 
     3. x = 5
+
        y = x + 5
+
        z y = y * 10
+
        ~z :: Num => a -> a~
 
     4. x = 5
@@ -247,51 +265,56 @@ Else the code is untouched if there's nothing wrong
 ** Type variable or specific type constructor?
 Numbering of types in declaration is from left to right, and
 numbered from 1 to n
-    1. f :: Num a => a -> b -> Int -> Int
+    1. ~f :: Num a => a -> b -> Int -> Int~
        1. constrained polymorphic
        2. fully polymorphic
        3. concrete
        4. concrete
-    2. f :: zed -> Zed -> Blah
+    2. ~f :: zed -> Zed -> Blah~
        1. fully polymorphic
        2. concrete
        3. concrete
-    3. f :: Enum b => a -> b -> C
+    3. ~f :: Enum b => a -> b -> C~
        1. fully polymorphic
        2. constrained polymorphic
        3. concrete
-    4. f :: f -> g -> C
+    4. ~f :: f -> g -> C~
        1. fully polymorphic
        2. fully polymorphic
        3. Concrete
 ** Write a type signature
-1. functionH :: [a] -> a
+1.
+#+BEGIN_SRC haskell
+   functionH :: [a] -> a
    functionH (x:_) = x
-2. function C :: Ord a => a -> a -> Bool
+
+#+END_SRC
+2.
+,#+BEGIN_SRC haskell
+   function C :: Ord a => a -> a -> Bool
    functionC x y =
     if (x > y) then True else False
-3. functionS :: (a, b) -> b
+#+END_SRC
+3.
+,#+BEGIN_SRC haskell
+   functionS :: (a, b) -> b
    functionS (x, y) = y
+
+#+END_SRC
 ** Given a type, write the function
-1. i :: a -> a
-   i x = x
-2. c :: a -> b -> a
-   c x y = x
-3. c'' :: b -> a -> b
-   c'' x y = x
-   -- Yes they are alpha equivalent
-4. c' :: a -> b -> b
-   c' x y = y
-5. r :: [a] -> [a]
-   r xs = xs
-6. co :: (b -> c) -> (a -> b) -> a -> c
-   co bToc aTob a = (bToc . aTob) a
-7. a :: (a -> c) -> a -> a
-   a aToc x = x
-8. a' :: (a -> b) -> a -> b
-   a' aTob x = aTob x
+1. ~i :: a -> a; i x = x~
+2. ~c :: a -> b -> a; c x y = x~
+3. ~c'' :: b -> a -> b; c'' x y = x -- Yes they are alpha equivalent~
+4. ~c' :: a -> b -> b; c' x y = y~
+5. ~r :: [a] -> [a]; r xs = xs~
+6. ~co :: (b -> c) -> (a -> b) -> a -> c; co bToc aTob a = (bToc . aTob) a~
+7. ~a :: (a -> c) -> a -> a; a aToc x = x~
+8. ~a' :: (a -> b) -> a -> b; a' aTob x = aTob x~
 ** Fix it
-1. module Sing where
+1.
+#+BEGIN_SRC haskell
+
+   module Sing where
 
    fstString :: [Char] -> [Char]
    fstString x = x ++ " in the rain"
@@ -302,12 +325,18 @@ numbered from 1 to n
    sing = if (x > y) then fstString x else sndString y
    where x = "Singin"
          y = "Somewhere"
-
-2. sing = if (x < y) then fstString x else sndString y
+#+END_SRC
+2.
+#+BEGIN_SRC haskell
+   sing = if (x < y) then fstString x else sndString y
    where x = "Singin"
          y = "Somewhere"
 
-3. module Arith3Broken where
+#+END_SRC
+3.
+#+BEGIN_SRC haskell
+
+   module Arith3Broken where
 
    main :: IO ()
    main = do
@@ -316,9 +345,11 @@ numbered from 1 to n
     print (-1)
     print ((+) 0 blah)
         where blah = negate 1
-
+#+END_SRC
 ** Type-Kwon-Do
-1. f :: Int -> String
+1.
+   #+begin_src haskell
+   f :: Int -> String
    f = undefined
 
    g :: String -> Char
@@ -326,9 +357,9 @@ numbered from 1 to n
 
    h :: Int -> Char
    h =  g . f
-
+   #+end_src
 2.
-   #+begin_src text
+   #+begin_src haskell
    data A
    data B
    data C
@@ -342,7 +373,9 @@ numbered from 1 to n
    e :: A -> C
    e = w . q
    #+end_src
-3. data X
+3.
+   #+begin_src haskell
+   data X
    data Y
    data Z
 
@@ -354,6 +387,9 @@ numbered from 1 to n
 
    xform :: (X, Y) -> (Z, Z)
    xform (x, y) = (xz x, yz y)
-
-4. munge :: (x -> y) -> (y -> (w, z)) -> x -> w
+   #+end_src
+4.
+   #+begin_src haskell
+   munge :: (x -> y) -> (y -> (w, z)) -> x -> w
    munge xToy yTowz x = fst (yTowz (xToy x))
+   #+end_src
