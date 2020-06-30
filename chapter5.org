@@ -327,7 +327,9 @@ numbered from 1 to n
    h :: Int -> Char
    h =  g . f
 
-2. data A
+2.
+   #+begin_src text
+   data A
    data B
    data C
 
@@ -339,7 +341,7 @@ numbered from 1 to n
 
    e :: A -> C
    e = w . q
-
+   #+end_src
 3. data X
    data Y
    data Z
