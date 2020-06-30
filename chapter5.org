@@ -178,68 +178,67 @@ triple x = tripleItYo x
     4. A function of type (a, b) -> a
        takes a tuple argument and returns the first value
 ** Determine the type
-    1. (* 9) 6
+    1.
 
+      #+BEGIN_SRC text
+       (* 9) 6
        54
-
        ~:: Num a => a~
 
        head [(0, "doge"),(1,"kitteh")]
-
        (0, "doge")
-
        ~:: Num a => (a, [Char])~
 
        head [(0 :: Integer , "doge"),(1,"kitteh")]
-
        (0, "doge")
-
        ~:: (Integer, [Char])~
 
-
        if False then True else False
-
         False
-
        ~:: Bool~
 
        length [1,2,3,4,5]
-
-       5
-
-       ~:: Int~
+       5 :: Int
 
        (length [1,2,3,4]) > (length "TACOCAT")
+       False :: Bool
+      #+END_SRC
 
-       False
-       ~:: Bool~
+    2.
 
-    2. x = 5
-
+      #+BEGIN_SRC text
+       x = 5
        y = x + 5
-
        w = y * 10
+       w :: Num a => a
+      #+END_SRC
 
-       ~w :: Num a => a~
+    3.
 
-    3. x = 5
-
+      #+BEGIN_SRC text
+       x = 5
        y = x + 5
-
        z y = y * 10
+       z :: Num => a -> a
+      #+END_SRC
 
-       ~z :: Num => a -> a~
+    4.
 
-    4. x = 5
+      #+BEGIN_SRC text
+       x = 5
        y = x + 5
        f = 4 / y
-       ~f :: Fractional a => a~
+       f :: Fractional a => a
+      #+END_SRC
 
-    5. x = "Julie"
+    5.
+      #+BEGIN_SRC text
+       x = "Julie"
        y = " <3 "
        z = "Haskell"
        f = x ++ y ++ z
-       ~f :: [Char]~
+       f :: [Char]
+      #+END_SRC
 
 ** Does it compile?
 Incorrect expressions (if any) are marked with open and close ~
