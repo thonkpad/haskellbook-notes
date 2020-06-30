@@ -1,0 +1,357 @@
+#+TITLE: Chapter 5: Types
+
+* Notes
++ All functions in Haskell take one argument and return one result
+  + Functions that take multiple functions are conceptually not curried
+    but are curried under the hood.
++ (->) is a function takes one argument and returns one result
+  + So ~a -> a -> a~ can be read as ~a -> (a -> a)~
+    and ~(a -> b) -> [a] -> [b]~ can be read as ~(a -> b) -> ([a] -> [b])~
++ Curried Functions: Multiple functions, one argument per functions
+  "Uncurried" Functions: One function, multiple arguments
+
+#+begin_src haskell
+addStuff :: Integer -> Integer -> Integer
+addStuff a b = a + b + 5
+
+
+Prelude :t addStuff
+addStuff :: Integer -> Integer -> Integer
+Prelude> let addTen = addStuff 5
+Prelude> let fifteen = addTen 5
+Prelude> fifteen
+15
+Prelude> addTen 15
+Prelude> addStuff 5 5
+15
+#+end_src
++ Via currying, ~fifteen~ is equal to ~addStuff 5 5~ because ~addTen~ is
+  equal to ~addStuff 5~.
+  + Applying only some of a function's arguments is called /partial application/
++ Currying arguments on partial application in-fixes to the left, so
+  ~addTen 5~ applies 5 as the second argument because the first argument already takes another 5 from ~let addTen = addStuff 5~
+
+#+BEGIN_SRC haskell
+nonsense :: Bool -> Integer
+nonsense True = 805
+nonsense False = 31337
+
+typicalCurriedFunction :: Integer -> Bool -> Integer
+typicalCurriedFunction i b =
+  i + (nonsense b)
+
+uncurriedFunction :: (Integer, Bool) -> Integer
+uncurriedFunction (i, b) = i + (nonsense b)
+
+anonymous :: Integer -> Bool -> Integer
+anonymous = \i b -> i + (nonsense b)
+
+anonymousAndManuallyNested :: Integer -> Bool -> Integer
+anonymousAndManuallyNested =
+  \i -> \b -> i + (nonsense b)
+#+end_src
+
++ In "anonymousAndManuallyNested", we manually nested the lambda functions
+  to get a function semantically identical to "typicalCurriedFunction"
+
+#+BEGIN_SRC haskell
+Prelude> let curry f a b = f (a, b)
+Prelude> :t curry
+curry :: ((t1, t2) -> t) -> t1 -> t2 -> t
+Prelude> :t fst
+fst :: (a, b) -> a
+Prelude> :t curry fst
+curry fst :: t -> b -> t
+Prelude> fst (1, 2)
+1
+Prelude> curry fst 1 2
+1
+-- Then for uncurrying:
+Prelude> let uncurry f (a, b) = f a b
+Prelude> :t uncurry
+uncurry :: (t1 -> t2 -> t) -> (t1, t2) -> t
+Prelude> :t (+)
+(+) :: Num a => a -> a -> a
+Prelude> (+) 1 2
+3
+Prelude> uncurry (+) (1, 2)
+3
+#+END_SRC
+
++ Polymorphic: to have multiple forms
+  + Monomorphic: to have one form
++ Polymorphic type variables allow the implementation of
+  expressions that can accept arguments and return results of different types
++ Haskell polymorphism is divided into two categories:
+  1. Parametric polymorphism: type variables that are fully polymorphic
+  2. Constrained polymorphism: puts typeclass constraints on the variable
+     + less polymorphic
+
+#+BEGIN_SRC haskell
+Prelude> :t (-10) + 6.3
+(-10) + 6.3 :: Fractional a => a
+Prelude> :t (-10)
+(-10) :: Num a => a
+#+END_SRC
+
++ The typeclass of (-10) changed to Fractional to accommodate the fractional
+  number 6.3 because of type inference.
+
+#+BEGIN_SRC haskell
+Prelude> let x = 5 + 5
+Prelude> :t x
+x :: Num a => a
+Prelude> let x = 5 + 5 :: Int
+Prelude> :t x
+x :: Int
+#+END_SRC
+
++ You can force the compiler to be more specific using `::`
+
+#+BEGIN_SRC haskell
+Prelude> 6 / length [1, 2, 3]
+No instance for (Fractional Int) arising
+from a use of ‘/’
+In the expression: 6 / length [1, 2, 3]
+In an equation for ‘it’: it = 6 / length [1, 2, 3]
+#+END_SRC
+
++ Fractional typeclass does not include Int
++ You can use the ~fromIntegral~ function to take
+  an integral value and force it to implement the Num typeclass.
+  + ~fromIntegral :: (Num b, Integral a) => a -> b~
+
+#+BEGIN_SRC haskell
+6 / fromIntegral $ length [1,2,3]
+2.0
+#+END_SRC
+
++ It is possible, though uncommon, to declare types locally
+  with let and where. Here’s an example of assigning a type within
+
+#+BEGIN_SRC haskell
+triple :: Integer -> Integer
+triple x = tripleItYo x
+  where tripleItYo :: Integer -> Integer
+        tripleItYo y = y * 3
+#+END_SRC
+
+
+* Intermission Exercises Answers
+** Page 143
+    1. ~not :: Bool -> Bool~
+    2. ~length :: [a] -> Int~
+    3. ~concat :: [[a]] -> [a]~
+    4. ~head [a] -> a~
+    5. ~(<) :: Ord a => a -> a -> Bool~
+** Page 204
+    1. ~f x :: Char -> Char -> Char~
+    2. ~g 0 'c' "woot" :: Char~
+    3. ~h 1.0 2 :: Num b => b~
+    4. ~h 1 (5.5 :: Double) :: Double~
+    5. ~jackal "keyboard" "has the word jackal in it" :: [Char]~
+    6. ~jackal "keyboard" :: Eq b => b -> [Char]~
+    7. ~kessel 1 2 :: (Num a, Ord a) => a~
+    8. ~kessel 1 (2 :: Integer) :: (Num a, Ord a) => a~
+    9. ~kessel (1 :: Integer) 2 :: Integer~
+** Page 213
+    1. Closest I can come up with is ~hm x = 1~
+    2. ~hm a b = a~
+       ~ok a b = b~
+    3. ~f :: a -> b -> b~
+       ~f x y = y~
+** Page 220
+    1. ~:: [Char] -> [Char]~
+    2. ~:: Fractional a => a -> a~
+    3. ~:: Int -> [Char]~
+    4. ~:: Int -> Bool~
+    5. ~:: Char -> Bool~
+
+* Chapter Exercises
+** Multiple choice
+    1. A value of type [a] is a list whose elements
+       are all of some type a
+    2. A function type of ~[[a]]~ -> [a] could
+       take a list of strings as an argument
+    3. A function of type [a] -> Int -> a
+       returns one element of type a from a list
+    4. A function of type (a, b) -> a
+       takes a tuple argument and returns the first value
+** Determine the type
+    1. (* 9) 6
+       54
+       ~:: Num a => a~
+
+       head [(0, "doge"),(1,"kitteh")]
+       (0, "doge")
+       ~:: Num a => (a, [Char])~
+
+       head [(0 :: Integer , "doge"),(1,"kitteh")]
+       (0, "doge")
+       ~:: (Integer, [Char])~
+
+       if False then True else False
+       False
+       ~:: Bool~
+
+       length [1,2,3,4,5]
+       5
+       ~:: Int~
+
+       (length [1,2,3,4]) > (length "TACOCAT")
+       False
+       ~:: Bool~
+
+    2. x = 5
+       y = x + 5
+       w = y * 10
+       ~w :: Num a => a~
+
+    3. x = 5
+       y = x + 5
+       z y = y * 10
+       ~z :: Num => a -> a~
+
+    4. x = 5
+       y = x + 5
+       f = 4 / y
+       ~f :: Fractional a => a~
+
+    5. x = "Julie"
+       y = " <3 "
+       z = "Haskell"
+       f = x ++ y ++ z
+       ~f :: [Char]~
+
+** Does it compile?
+Incorrect expressions (if any) are marked with open and close ~
+and the fix will be on the line below it.
+Else the code is untouched if there's nothing wrong
+
+    1. ~bigNum = (^) 5 $ 10~
+       bigNum = (^) 5 -- $ 10 invalidates partial application of wahoo
+       wahoo = bigNum $ 10
+    2. x = print
+       y = print "woohoo!"
+       z = x "hello world"
+    3. a = (+)
+       b = 5
+       ~c = b 10~
+       c = b `a` 10
+       ~d = c 200~
+       d = a c 200
+    4. a = 12 + b
+       b = 100000 * c
+       c = 2 -- There's no `c` declared so I made one myself
+
+** Type variable or specific type constructor?
+Numbering of types in declaration is from left to right, and
+numbered from 1 to n
+    1. f :: Num a => a -> b -> Int -> Int
+       1. constrained polymorphic
+       2. fully polymorphic
+       3. concrete
+       4. concrete
+    2. f :: zed -> Zed -> Blah
+       1. fully polymorphic
+       2. concrete
+       3. concrete
+    3. f :: Enum b => a -> b -> C
+       1. fully polymorphic
+       2. constrained polymorphic
+       3. concrete
+    4. f :: f -> g -> C
+       1. fully polymorphic
+       2. fully polymorphic
+       3. Concrete
+** Write a type signature
+1. functionH :: [a] -> a
+   functionH (x:_) = x
+2. function C :: Ord a => a -> a -> Bool
+   functionC x y =
+    if (x > y) then True else False
+3. functionS :: (a, b) -> b
+   functionS (x, y) = y
+** Given a type, write the function
+1. i :: a -> a
+   i x = x
+2. c :: a -> b -> a
+   c x y = x
+3. c'' :: b -> a -> b
+   c'' x y = x
+   -- Yes they are alpha equivalent
+4. c' :: a -> b -> b
+   c' x y = y
+5. r :: [a] -> [a]
+   r xs = xs
+6. co :: (b -> c) -> (a -> b) -> a -> c
+   co bToc aTob a = (bToc . aTob) a
+7. a :: (a -> c) -> a -> a
+   a aToc x = x
+8. a' :: (a -> b) -> a -> b
+   a' aTob x = aTob x
+** Fix it
+1. module Sing where
+
+   fstString :: [Char] -> [Char]
+   fstString x = x ++ " in the rain"
+
+   sndString :: [Char] -> [Char]
+   sndString x = x ++ " over the rainbow"
+
+   sing = if (x > y) then fstString x else sndString y
+   where x = "Singin"
+         y = "Somewhere"
+
+2. sing = if (x < y) then fstString x else sndString y
+   where x = "Singin"
+         y = "Somewhere"
+
+3. module Arith3Broken where
+
+   main :: IO ()
+   main = do
+    print $ 1 + 2
+    putStrLn "10"
+    print (-1)
+    print ((+) 0 blah)
+        where blah = negate 1
+
+** Type-Kwon-Do
+1. f :: Int -> String
+   f = undefined
+
+   g :: String -> Char
+   g = undefined
+
+   h :: Int -> Char
+   h =  g . f
+
+2. data A
+   data B
+   data C
+
+   q :: A -> B
+   q = undefined
+
+   w = B -> C
+   w = undefined
+
+   e :: A -> C
+   e = w . q
+
+3. data X
+   data Y
+   data Z
+
+   xz :: X -> Z
+   xz = undefined
+
+   yz :: Y -> Z
+   yz = undefined
+
+   xform :: (X, Y) -> (Z, Z)
+   xform (x, y) = (xz x, yz y)
+
+4. munge :: (x -> y) -> (y -> (w, z)) -> x -> w
+   munge xToy yTowz x = fst (yTowz (xToy x))
