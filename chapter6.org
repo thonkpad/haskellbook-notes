@@ -3,3 +3,60 @@
 [[file:README.org][Back to Prelude]]
 
 * Notes
++ Typeclasses allow us to generalize over a set of types
+  in order to define and execute a standard set of features
+  for those types.
+  + For example, the ability to test values for equality.
+    We can test any data of a type that implements the typeclass
+    known as "Eq" for equality.
+
+#+BEGIN_SRC haskell
+Prelude> :info Bool
+data Bool = False | True
+instance Bounded Bool
+instance Enum Bool
+instance Eq Bool
+instance Ord Bool
+instance Read Bool
+instance Show Bool
+#+END_SRC
+
++ The information includes the data declaration for Bool and
+  which typeclasses it already has instances of.
+  1. ~instance Bounded Bool~ for types that have an upper and lower
+     bound
+  2. ~instance Enum Bool~ for things that can be enumerated
+  3. ~instance Eq Bool~ for things that can be tested for equality
+  4. ~instance Org Bool~ for things that can be put into a sequential order
+  5. ~instance Read Bool~ parses strings into other types
+     + Book says not to use it apparently
+  6. ~instance Show Bool~ renders things into strings
+
++ Typeclasses have a hierarchy of sorts
+  + All ~Fractional~ numbers implement the ~Num~ typeclass,
+    but not all ~Num~ are ~Fractional~ as an example.
+  + All members of ~Ord~ are members of ~Eq~, and all members
+    of ~Enum~ are members of ~Ord~
+
+#+BEGIN_SRC haskell
+Prelude> :info Eq
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+
+instance Eq a => Eq [a]
+instance Eq Ordering
+instance Eq Int
+instance Eq Float
+instance Eq Double
+instance Eq Char
+instance Eq Bool
+instance (Eq a, Eq b) => Eq (a, b)
+instance Eq ()
+instance Eq a => Eq (Maybe a)
+instance Eq Integer
+#+END_SRC
+
++ First it tells we have a typeclass called ~Eq~ that have two
+  functions, ~==~ and ~/=~ ("equal to" and "not equal to")
++ Then it lists what types are instances of ~Eq~
