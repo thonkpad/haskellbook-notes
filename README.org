@@ -1,3 +1,6 @@
-#+TITLE: Readme
+#+TITLE: Prelude
 
 Notes for the book "Haskell Programming from First Principles"
+
+* Chapters
++ [[org:haskellNotes/chapter5.org][Chapter 5: Types]]
