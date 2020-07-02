@@ -1,5 +1,7 @@
 #+TITLE: Chapter 5: Types
 
+[[file:README.org][Back to Prelude]]
+
 * Notes
 + All functions in Haskell take one argument and return one result
   + Functions that take multiple functions are conceptually not curried
