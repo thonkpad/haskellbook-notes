@@ -59,4 +59,20 @@ instance Eq Integer
 
 + First it tells we have a typeclass called ~Eq~ that have two
   functions, ~==~ and ~/=~ ("equal to" and "not equal to")
+  + Both operators take two type variables that have an instance
+    of ~Eq~ and return a ~Bool~
 + Then it lists what types are instances of ~Eq~
+
+#+BEGIN_SRC haskell
+data (,) a b = (,) a b
+instance (Eq a, Eq b) => Eq (a, b)
+instance (Ord a, Ord b) => Ord (a, b)
+instance (Read a, Read b) => Read (a, b)
+instance (Show a, Show b) => Show (a, b)
+#+END_SRC
+
++ This tells us the equality of two tuples (a, b) depends on the
+  equality of their constituent values.
+  + which is why ~(1, 'a') == (2, 'b')~ works
+    but ~(1, 2) == ('a', 'b')~ doesn't
+    + basically alpha equivalence
