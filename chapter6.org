@@ -76,3 +76,81 @@ instance (Show a, Show b) => Show (a, b)
   + which is why ~(1, 'a') == (2, 'b')~ works
     but ~(1, 2) == ('a', 'b')~ doesn't
     + basically alpha equivalence
+
+#+BEGIN_SRC haskell
+data Trivial = Trivial
+#+END_SRC
+
++ With no ~deriving~ clause on this type declaration, there is no
+  typeclass instance of any kind.
++ If we run ~Trivial == Trivial~, it will give a type error complaining
+  about no instance for (Eq Trivial) arising from the use of ~==~
++ This should fix it
+
+  #+BEGIN_SRC haskell
+data Trivial = Trivial' -- Data constructors don't need the same name
+
+instance Eq Trivial where
+  Trivial' == Trivial' = True
+  #+END_SRC
+
++ ~instance~ begins a declaration for a typeclass instance, which is
+  how equality, stringification, orderability, enumeration, or other typeclasses
+  should work for a particular datatype.
++ The first name after ~instance~ is the typeclass the instance is providing.
+  + In this case ~Eq~
++ The next is the type the instance is being provided for.
+  + which is ~Trivial~ in this case
++ ~where~ ends the declaration and beginning of the instance. What follows
+  are the functions being implemented.
++ ~Trivial'~ is the first/left argument to the ~==~ function, followed by another
+  ~Trivial'~ as the second/right argument, then the result of the code is
+  declared to evaluate to True
+
+#+BEGIN_SRC haskell
+data DayOfWeek =
+  Mon | Tue | Weds | Thu | Fri | Sat | Sun
+
+data Date =
+  Date DayOfWeek Int
+#+END_SRC
+
++ Can't do anything with this yet since there are no operations defined for them...
+  yet
+
+#+BEGIN_SRC haskell
+instance Eq DayOfWeek where
+  (==) Mon Mon = True
+  (==) Tue Tue = True
+  (==) Weds Weds = True
+  (==) Thu Thu = True
+  (==) Fri Fri = True
+  (==) Sat Sat = True
+  (==) Sun Sun = True
+  (==) _ _ = False
+#+END_SRC
+
++ This is obviously just to see if two given days are the same, else false.
+  Now to write an ~Eq~ instance for type ~Date~
+
+#+BEGIN_SRC haskell
+instance Eq Date where
+  (==) (Date weekday dayOfMonth)
+       (Date weekday' dayOfMonth') =
+    weekday == weekday'
+  && dayOfMonth == dayOfMonth'
+#+END_SRC
+
++ Test if it works
+
+#+BEGIN_SRC haskell
+Prelude> Date Thu 10 == Date Thu 10
+True
+Prelude> Date Thu 10 == Date Thu 11
+False
+Prelude> Date Thu 10 == Date Weds 10
+False
+#+END_SRC
+
++ It works, also we can't print them in the REPL yet since there is no
+  ~Show~ instance.
