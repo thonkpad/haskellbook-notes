@@ -154,3 +154,58 @@ False
 
 + It works, also we can't print them in the REPL yet since there is no
   ~Show~ instance.
+
++ Partial application /= partial function.
+  + A partial function is one that doesn't handle all the possible cases.
+    + Partial functions bad
++ If we were to take our ~DayOfWeek~ code without ~(==) _ _ = False~
+  and have it compare two different values
+  (i.e. ~Mon == Tue~) we would get this
+
+#+BEGIN_SRC haskell
+Prelude> Mon == Tue
+\*** Exception: code/derivingInstances.hs:
+(19,3)-(25,23):
+Non-exhaustive patterns in function ==
+#+END_SRC
+
++ The ~_~ is important since it provides a fallback case, or an "else" condition
+  like in imperative languages. Without it pattern matching becomes non-exhaustive.
++ Another example of using this fallback mechanism
+
+#+BEGIN_SRC haskell
+f :: Int -> Bool
+f 1 = True
+f 2 = True
+f 3 = True
+f _ = False
+#+END_SRC
+
++ We sometimes need to require our argument(s) to provide some typeclass
+  instances for us in order to write an instance for the datatype containing them
+  when we're writing an instance of a typeclass for something with polymorphic
+  parameters
+
+#+BEGIN_SRC haskell
+data Identity a =
+  Identity a
+
+instance Eq (Identity a) where
+  (==) (Identity v) (Identity v') = v == v'
+#+END_SRC
+
++ What we want is to rely on whatever ~Eq~ instances the arguments to Identity
+  (~a~ in the datatype declaration and ~v~ in the instance definition) has already.
+  However the code will throw an error complaining about having no instance for ~(Eq a)~
+  arising from a use of '=='.
++ Both ~v~ and ~v'~ are both of type ~a~ but we don't know anything about it
++ We can fix it with the same typeclass constraint syntax used with functions like so
+
+#+BEGIN_SRC haskell
+instance Eq a => Eq (Identity a) where
+  (==) (Identity v) (Identity v') = v == v
+#+END_SRC
+
++ This should work because we now know ~a~ has to have an instance of ~Eq~
++ Also Haskell will ensure that we don't check equality with values that don't
+  have an ~Eq~ instance
