@@ -238,6 +238,7 @@ data StringOrInt = TisAnInt Int
 instance Eq StringOrInt where
  (==) (TisAnInt x) (TisAnInt y) = x == y
  (==) (TisAString a) (TisAString b) a == b
+ (==) __ = False
 #+END_SRC
 
     4.
