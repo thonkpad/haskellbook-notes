@@ -210,6 +210,67 @@ instance Eq a => Eq (Identity a) where
 + Also Haskell will ensure that we don't check equality with values that don't
   have an ~Eq~ instance
 
+#+BEGIN_SRC haskell
+class Num a where
+(+) :: a -> a -> a
+(*) :: a -> a -> a
+(-) :: a -> a -> a
+negate :: a -> a
+abs :: a -> a
+signum :: a -> a
+fromInteger :: Integer -> a
+
+instance Num Integer
+instance Num Int
+instance Num Float
+instance Num Double
+#+END_SRC
+
++ This is the typeclass ~Num~ and some of its instances and functions
+
+#+BEGIN_SRC haskell
+class (Real a, Enum a) => Integral a where
+  quot :: a -> a -> a
+  rem :: a -> a -> a
+  div :: a -> a -> a
+  mod :: a -> a -> a
+  quotRem :: a -> a -> (a, a)
+  divMod :: a -> a -> (a, a)
+  toInteger :: a -> Integer
+#+END_SRC
+
++ This is the typeclass ~Integral~
++ The typeclass constraint ~(Real a, Enum a)~ means that any type that implements
+  ~Integral~ must have instances of those two. So an integral type must be both
+  a real number and enumerable and can therefore employ the methods of those typeclasses
++ In turn, the ~Real~ typeclass requires an instance of ~Num~, so the ~Integral~ class
+  may put the methods of ~Real~ and ~Num~ into effect.
++ ~Real~ can't override the methods of ~Num~
+
+#+BEGIN_SRC haskell
+class (Num a) => Fractional a where
+  (/) :: a -> a -> a
+  recip :: a -> a
+  fromRational :: Rational -> a
+#+END_SRC
+
++ This is the ~Fractional~ typeclass, and its type argument ~a~
+  also an instance of ~Num~, this is another example of typeclass inheritance
++ ~Fractional~ applies to fewer numbers than ~Num~ does
++ Instances of ~Fractional~ can use the functions defined in ~Num~
+  but not all ~Num~ can use ~Fractional~ functions
+  + Since nothing in ~Num~'s definition requires an instance of ~Fractional~
++ Consider this function ~divideThenAdd x y = (x / y) + 1~
+  + If you give it the type signature ~Num a => a -> a -> a~ you'll get a type error
+    + Because it could not deduce ~(Fractional a)~ from the use of '/' from the context
+      of ~(Num a)~
+  + You could fix it with this ~Fractional a => a -> a -> a~ because the '/' operator
+    is an instance of ~Fractional~ only
++ The function could have been written like ~f \:: (Num a, Fractional a) => a -> a -> a~
+  which is also correct, but I assume it is redundant since ~Fractional~ is already an
+  instance of, and inherits from ~Num~ which the compiler should be able to deduce and
+  infer on its own
+
 * Exercises
 ** Page 272
     1.
@@ -280,3 +341,11 @@ instance (Eq a, Eq b) => Eq (EitherOr a b) where
   (==) (Goodbye x) (Goodbye x') = x == y'
   (==) __ = False
 #+END_SRC
+** Page 275
+   #+BEGIN_SRC haskell
+quotRem, divMod :: Integral a => a -> a -> (a, a)
+   #+END_SRC
+   ~quotRem~ takes two numbers and returns a tuple containing the result
+   of the integer divison, and remainder
+
+   ~divMod~ is the same as ~quotRem~ but returns the modulo instead of remainder
