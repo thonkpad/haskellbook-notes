@@ -27,7 +27,7 @@ instance Show Bool
      bound
   2. ~instance Enum Bool~ for things that can be enumerated
   3. ~instance Eq Bool~ for things that can be tested for equality
-  4. ~instance Org Bool~ for things that can be put into a sequential order
+  4. ~instance Ord Bool~ for things that can be put into a sequential order
   5. ~instance Read Bool~ parses strings into other types
      + Book says not to use it apparently
   6. ~instance Show Bool~ renders things into strings
@@ -209,3 +209,73 @@ instance Eq a => Eq (Identity a) where
 + This should work because we now know ~a~ has to have an instance of ~Eq~
 + Also Haskell will ensure that we don't check equality with values that don't
   have an ~Eq~ instance
+
+* Exercises
+** Page 272
+    1.
+#+BEGIN_SRC haskell
+data TisAnInteger =
+  TisAn Integer
+
+instance Eq TisAnInteger where
+  (==) (TisAn x) (TisAn y) = x == y
+#+END_SRC
+
+    2.
+#+BEGIN_SRC haskell
+data TwoIntegers =
+  Two Integer Integer
+
+instance Eq TwoIntegers where
+  (==) (Two x y) (Two x' y') = x == x' && y == y'
+#+END_SRC
+
+    3.
+#+BEGIN_SRC haskell
+data StringOrInt = TisAnInt Int
+                 | TisAString String
+
+instance Eq StringOrInt where
+ (==) (TisAnInt x) (TisAnInt y) = x == y
+ (==) (TisAString a) (TisAString b) a == b
+#+END_SRC
+
+    4.
+#+BEGIN_SRC haskell
+data Pair a =
+  Pair a a
+
+instance Eq a => Eq (Pair a) where
+  (==) (Pair x x') (Pair y y') = x == y && y == y'
+#+END_SRC
+
+    5.
+#+BEGIN_SRC haskell
+data Tuple a b =
+  Tuple a b
+
+instance (Eq a, Eq b) => Eq (Tuple a b) where
+  (==) (Tuple x y) (Tuple x' y') = x == x' && y == y'
+#+END_SRC
+
+    6.
+#+BEGIN_SRC haskell
+data Which a = ThisOne a
+             | ThatOne a
+
+instance (Eq a) => Eq (Which a) where
+  (==) (ThisOne x) (ThisOne x') = x == x'
+  (==) (ThatOne y) (ThatOne y') = y == y'
+  (==) __ = False
+#+END_SRC
+
+    7.
+#+BEGIN_SRC haskell
+data EitherOr a b = Hello a
+                  | Goodbye b
+
+instance (Eq a, Eq b) => Eq (EitherOr a b) where
+  (==) (Hello x) (Hello x') = x == y'
+  (==) (Goodbye x) (Goodbye x') = x == y'
+  (==) __ = False
+#+END_SRC
