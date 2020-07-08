@@ -271,6 +271,31 @@ class (Num a) => Fractional a where
   instance of, and inherits from ~Num~ which the compiler should be able to deduce and
   infer on its own
 
++ When you have a typeclass-constrained polymorphic value and need to evaluate it,
+  the polymorphism must resolve to a specific concrete type
++ The concrete type must have an instance for all the required instances
+  + i.e. if it is required to implement ~Num~ and ~Fractional~ then the concrete
+    type can't be an ~Int~
+
+#+BEGIN_SRC haskell
+default Num Integer
+default Real Integer
+default Enum Integer
+default Integral Integer
+default Fractional Double
+default RealFrac Double
+default Floating Double
+default RealFloat Double
+#+END_SRC
+
++ The Haskell Report specifies these defaults relevant to numerical
+  computations
++ These three operators are instances of ~Num~
+
+#+BEGIN_SRC haskell
+(+), (*), (-) :: Num a => a -> a -> a
+#+END_SRC
+
 * Exercises
 ** Page 272
     1.
