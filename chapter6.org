@@ -268,8 +268,7 @@ class (Num a) => Fractional a where
     is an instance of ~Fractional~ only
 + The function could have been written like ~f \:: (Num a, Fractional a) => a -> a -> a~
   which is also correct, but I assume it is redundant since ~Fractional~ is already an
-  instance of, and inherits from ~Num~ which the compiler should be able to deduce and
-  infer on its own
+  instance of, and inherits from ~Num~
 
 + When you have a typeclass-constrained polymorphic value and need to evaluate it,
   the polymorphism must resolve to a specific concrete type
