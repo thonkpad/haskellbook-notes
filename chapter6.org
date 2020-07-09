@@ -138,7 +138,7 @@ instance Eq Date where
   (==) (Date weekday dayOfMonth)
        (Date weekday' dayOfMonth') =
     weekday == weekday'
-  && dayOfMonth == dayOfMonth'
+    && dayOfMonth == dayOfMonth'
 #+END_SRC
 
 + Test if it works
@@ -294,6 +294,157 @@ default RealFloat Double
 #+BEGIN_SRC haskell
 (+), (*), (-) :: Num a => a -> a -> a
 #+END_SRC
+
++ This is a trimmed down version of ~:info Ord~
+
+#+BEGIN_SRC haskell
+class Eq a => Ord a where
+  compare :: a -> a -> Ordering
+  (<) :: a -> a -> Bool
+  (>=) :: a -> a -> Bool
+  (>) :: a -> a -> Bool
+  (<=) :: a -> a -> Bool
+  max :: a -> a -> a
+  min :: a -> a -> a
+instance Ord a => Ord (Maybe a)
+instance (Ord a, Ord b) => Ord (Either a b)
+instance Ord Integer
+instance Ord a => Ord [a]
+instance Ord Ordering
+instance Ord Int
+instance Ord Float
+instance Ord Double
+instance Ord Char
+instance Ord Bool
+#+END_SRC
+
++ As you can see, ~Ord~ is constrained by ~Eq~, or rather it inherits from said class
++ ~Ord~ requires ~Eq~ and its methods to compare items in a list and put them in order
++ Some of them gives a result of ~Bool~
+
+#+BEGIN_SRC haskell
+Prelude> compare 7 8
+LT
+Prelude> compare 4 (-4)
+GT
+Prelude> compare 4 4
+EQ
+Prelude> compare "Julie" "Chris"
+GT
+Prelude> compare True False
+GT
+Prelude> compare True True
+EQ
+#+END_SRC
+
++ This is the ~compare~ function which gives one of three outputs of type ~Ordering~
+  1. GT
+  2. LT
+  3. EQ
+     + I think it's obvious what they mean
++ The function works for any of the types listed above that implement ~Ord~
+  + including ~Bool~
++ ~True~ is greater than ~False~ because of how the ~Bool~ datatype is defined:
+  ~False | True~
++ The ~max~ and ~min~ functions output which ever is the greater or lesser
+  of two given values respectively
+
+#+BEGIN_SRC haskell
+Prelude> max 7 8
+8
+Prelude> min 10 (-10)
+-10
+Prelude> max (3, 4) (2, 3)
+(3,4)
+Prelude> min [2, 3, 4, 5] [3, 4, 5, 6]
+[2,3,4,5]
+Prelude> max "Julie" "Chris"
+"Julie"
+#+END_SRC
+
++ If you try to enter ~max "Julie"~ you'll get an error along the lines of this
+
+#+BEGIN_SRC haskell
+No instance for (Show ([Char] -> [Char]))
+arising from a use of ‘print’
+#+END_SRC
++ The typeclass it couldn't find an instance for was ~Show~
++ It couldn't find an instance of ~Show~ for the type ~[Char] -> [Char]~
+  + "Nothing with type (->) should have a ~Show~ instance as a general rule because
+    (->) denotes a function rather than a constant value"
++ We wanted an instance of ~Show~ because ~print~ was indirectly invoked, which has a
+  type of ~Show a => a -> IO ()~
+  + GHCi always indirectly invokes ~print~ when we try to input and evaluate an
+    expression
++ The error message is because ~max~ applied to a single String argument needs another
+  before it returns a String value that is printable
+
++ When you derive ~Ord~ instances for a datatype, they rely on how the datatype is
+  defined, but when you write your own instances, you can define the behavior yourself
++ Using this example again to demonstrate
+
+#+BEGIN_SRC haskell
+data DayOfWeek =
+  Mon | Tue | Weds | Thu | Fri | Sat | Sun
+  deriving (Ord, Show)
+#+END_SRC
+
++ We derived ~(Ord, Show)~ this time because we should still have the ~Eq~ instance
+  we wrote earlier in scope
+  + alternatively you can just derive ~Eq~
++ You can't have an ~Ord~ instance without also having an ~Eq~ instance
++ If you enter ~Mon > Tue~ in GHCi it will evaluate to ~False~ because ~Mon~ preceeds
+  ~Tue~
++ At the same time ~Sun > Mon~ is true because it the former suceeds the latter
++ You can also do something like ~compare Tue Weds~ which evaluates to ~LT~
++ You can override the ordering of the constructors
+
+#+BEGIN_SRC haskell
+data DayOfWeek =
+  Mon | Tue | Weds | Thu | Fri | Sat | Sun
+  deriving (Eq, Show)
+
+instance Ord DayOfWeek where
+  compare Fri Fri = EQ
+  compare Fri _   = GT
+  compare _ Fri   = LT
+  compare _ _     = EQ
+#+END_SRC
+
++ In this instance, the ordering is manually overridden so that friday is always their
+  greatest day of the week
++ At the same time, comparing two days other than friday will always evaluate to ~EQ~
++ Since we also derived ~Eq~ we also get to use the function operators belonging to it
+  + ~Sat == Mon = False~
+  + ~Fri == Fri = True~
++ As a rule of thumb, it is wise to ensure that ~Ord~ instances "agree" with your ~Eq~
+  instances, whether they (~Eq~) are derived or manually written
+  + If ~x == y~ then ~compare x y~ should return ~EQ~
+  + Also you want your ~Ord~ instances to define a sensible total order
+    + You ensure this in part by covering all cases and not writing partial
+      instances
+
++ The following won't typecheck because we lack ~Eq~
+
+#+BEGIN_SRC haskell
+check' :: a -> a -> Bool
+check a a' = a == a'
+#+END_SRC
+
++ However using ~Ord~ instead of ~Eq~ also works
+
+#+BEGIN_SRC haskell
+check' :: Ord a => a -> a -> Bool
+check a a' = a == a'
+#+END_SRC
+
++ It works because anything that provides an instance of ~Ord~ /must/ by definition
+  already have an instance of ~Eq~
++ We know this because ~Ord~ inherits from ~Eq~
++ If you type ~:info Ord~ you get ~class Eq => a Ord a where~ as the first line
+  + In English, this means that any ~a~ which wants to define an ~Ord~ instance must
+    already provide an ~Eq~ instance
+    + So in a sense, ~Eq~ is a superclass of ~Ord~
 
 * Exercises
 ** Page 272
