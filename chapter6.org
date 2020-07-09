@@ -524,3 +524,12 @@ quotRem, divMod :: Integral a => a -> a -> (a, a)
    of the integer divison, and remainder
 
    ~divMod~ is the same as ~quotRem~ but returns the modulo instead of remainder
+** Page 294
+    1. ~max (length [1,2,3]) (length [8,9,10,11,12])~ returns 5 which is the length
+       of the second argument, the output is of type ~Int~ which is also an instance of
+       ~Ord~ and ~max :: Ord a => a -> a -> a~
+    2. ~compare (3 * 4) (3 * 5)~ returns ~LT~ because the first argument evaluates to
+       12 which is less than the evaluation of the second argument which is 15
+    3. ~compare "Julie" True~ does not work because it is comparing two arguments of
+       different types, namely ~String~ and ~Bool~ respectively
+    4. ~(5 + 3) > (3 + 6)~ evaluates to False because 8 is less than 9
