@@ -446,6 +446,146 @@ check a a' = a == a'
     already provide an ~Eq~ instance
     + So in a sense, ~Eq~ is a superclass of ~Ord~
 
++ The ~Enum~ typeclass covers types that are enumerable, there having known predecessors
+  and successors.
++ This is info on the typeclass
+
+#+BEGIN_SRC haskell
+Prelude> :info Enum
+class Enum a where
+  succ :: a -> a
+  pred :: a -> a
+  toEnum :: Int -> a
+  fromEnum :: a -> Int
+  enumFrom :: a -> [a]
+  enumFromThen :: a -> a -> [a]
+  enumFromTo :: a -> a -> [a]
+  enumFromThenTo :: a -> a -> a -> [a]
+
+instance Enum Ordering
+instance Enum Integer
+instance Enum Int
+instance Enum Char
+instance Enum Bool
+instance Enum ()
+instance Enum Float
+instance Enum Double
+#+END_SRC
+
++ Numbers and characters obviously have successors and predecessors
++ You have ~succ~ and ~pred~ functions that get the successor and predecessor
+  respectively of a value
+
+#+BEGIN_SRC haskell
+succ 4 -- 5
+pred 4 -- 3
+
+succ 'b' -- 'c'
+pred 'b' -- 'a'
+#+END_SRC
+
++ There's also ~enumFromTo~ which constructs a range from a starting and end value of
+  identical concrete types
+
+#+BEGIN_SRC haskell
+enumFromTo 3 8
+[3,4,5,6,7,8]
+
+enumFromTo 'a' 'f'
+"abcdef"
+#+END_SRC
+
++ And then there's ~enumFromThenTo~
+
+#+BEGIN_SRC haskell
+enumFromThenTo 1 10 100
+[1,10,19,28,37,46,55,64,73,82,91,100]
+#+END_SRC
+
++ I assume it increments by 9 since that's the range of numbers before 10
+
++ ~Show~ is a typeclass for the creation of human-readable string representations
+  of structured data
++ GHCi uses it to create string values it can print in the terminal
++ ~Show~ is not a serialization format
+  + Serialization is how data is rendered to a textual or binary format for persistence
+    or communicating with other computers over a network
+    + An example of this is saving data to a file on disk
++ This is the (shortened) info of ~Show~
+
+#+BEGIN_SRC haskell
+class Show a where
+  showsPrec :: Int -> a -> ShowS
+  show :: a -> String
+  showList :: [a] -> ShowS
+
+instance Show a => Show [a]
+instance Show Ordering
+instance Show a => Show (Maybe a)
+instance Show Integer
+instance Show Int
+instance Show Char
+instance Show Bool
+instance Show ()
+instance Show Float
+instance Show Double
+#+END_SRC
+
++ Various number types, boolean values, tuples, and characters are already
+  instances of ~Show~
++ Which means they already have a defined ability to be printed on the screen
++ There is also the function ~show~ (mind the capitalization) which takes a polymorphic
+  value and returns it as ~String~
+
++ ~print~ is defined in the Prelude as a function to output a value
+  of any printable (as in, instance of ~Show~) type to the screen or any other
+  output device
++ The type of ~print~ is ~:: Show a => a -> IO ()~
++ It takes an constrained polymorphic type ~a~ that is an stance of ~Show~
+  and returns an ~IO ()~ result
++ ~IO ()~ is the obligatory type of the ~main~ function in any haskell source code file
+  + This is because the ~main~ function /only/ produces side effects
++ An I/O action is an action that has side effects, including reading from input
+  and printing something to the screen that will contain a return value
++ The () denotes an empty tuple, also known as a /unit/
++ An IO action, like any other expression in Haskell must return something, it can't
+  return a /nothing/
++ So a unit is used to represent the return value at the end of an I/O action
+  + As in, the ~print~ function will first do the I/O action of printing the value
+    to the terminal and then complete the action, marking an end to the running of the
+    function and a delimitation of side effects by returning a unit
+    + It does not print the empty tuple but it is implicitly there
++ The simplest way to differentiate between a value with a typical like such as ~String~
+  and the same type with ~IO~ (as in, ~IO String~) is that I/O actions are formulas
++ ~IO String~ is more of a "means of producing" a String, why may require performing
+  side effects along the way until we get a ~String~ value
++ This is a ~String~ value: ~myVal \:: String~
++ And this is a "means of obtaining a value" by performing effects or IO of ~String~:
+  ~ioString \:: IO String~
++ An IO action is performed when we call ~main~, but we also perform an IO action when
+  use the ~print~ function, explicitly or implicitly (such as in the GHCi)
+
++ A minimal implementation of an instance of ~Show~ only requires that ~show~ and
+  ~showsPrec~ is implemented
+
+#+BEGIN_SRC haskell
+data Mood = Blah
+
+instance Show Mood where
+  show _ = "Blah"
+------GHCI---------
+Prelude > Blah
+Blah
+#+END_SRC
+
++ When you try to define a datatype and invoke it in GHCi without a ~Show~ instance,
+  you get an error complaining about having no instance for ~Show~ on the datatype
+  arising from the use of ~print~
++ You can /derive/ an instance for ~Show~ on the data declaration since GHC supports
+  deriving instances for ~Show~
+  + ~data Mood = Blah deriving Show~
+    + This works exactly like the code block above
+
 * Exercises
 ** Page 272
     1.
