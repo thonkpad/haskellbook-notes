@@ -586,6 +586,164 @@ Blah
   + ~data Mood = Blah deriving Show~
     + This works exactly like the code block above
 
++ ~Read~ typeclass is meant to take strings and turn them into things
++ It's also not a serialization format
++ There's the ~read~ function which has a type of ~:: Read a => String -> a~
+  which takes a string as input and converts it to another type, like ~Int~
+  + So you could do something like ~read "1234567" \:: Integer~ which converts
+    the string of numbers into a proper ~Integer~ type
+    + ~read "BLAH" \:: Integer~ won't work for obvious reasons
++ ~Read~ bad because the ~String~ type is a list of ~Char~'s, which could be empty
+  or infinite in some cases
++ There's no way the type of ~read~ will always work
++ When you try to do the incorrect expression I showed earlier, it produces a runtime
+  error and means that ~read~ is a /partial function/, as in, a function that doesn't
+  return a proper value as a result for /all possible/ inputs
++ Haskell gives us the tools necessary to avoid these errors so we can mitigate the usage
+  of ~Read~
+
++ Remember these stuffs
+  + A typeclass defines a set of functions and/or values
+  + Types have instances of that typeclass
+  + The instances specify the ways that type uses the functions of the typeclass
++ *Don't write typeclasses like this*
+
+#+BEGIN_SRC haskell
+class Numberish a where
+  fromNumber :: Integer -> a
+  toNumber :: a -> Integer
+
+-- pretend newtype is data for now
+newtype Age =
+  Age Integer
+  deriving (Eq, Show)
+
+instance Numberish Age where
+  fromNumber n = Age n
+  toNumber (Age n ) = n
+
+newtype Year =
+  Year Integer
+  deriving (Eq, Show)
+
+instance Numberish Year where
+  fromNumber n = Year n
+  toNumber (Year n ) = n
+#+END_SRC
+
++ Then suppose we write a function using this typeclass and the two types
+  and instances
+
+#+BEGIN_SRC haskell
+sumNumberish :: Numberish a => a -> a -> a
+sumNumberish a a' fromNumber summed
+  where integerOfA = toNumber a
+        integerOfAPrime = toNumber a'
+        summed =
+          integerOfA + integerOfAPrime
+#+END_SRC
+
++ The class definition of ~Numberish~ does not define any terms or code we can use,
+  only types
++ The code lives in the instances for ~Age~ and ~Year~
+
+#+BEGIN_SRC haskell
+Prelude> sumNumberish (Age 10) (Age 10)
+Age 20
+#+END_SRC
+
++ In the above, Haskell knew to use the instance of ~Numberish~ for ~Age~ because
+  it sees that the arguments to ~sumNumberish~ has types of ~Age~
++ It can be seen through type inference too
+
+#+BEGIN_SRC haskell
+Prelude> :t sumNumberish
+sumNumberish :: Numberish a => a -> a -> a
+Prelude> :t sumNumberish (Age 10)
+sumNumberish (Age 10) :: Age -> Age
+#+END_SRC
+
++ After the first parameter is applied to a value of type ~Age~, it inferred that
+  the rest of the occurrences of ~Numberish a => a~ will be inferred to ~Age~
++ The following is an even worse case to demonstrate where we are *not* providing
+  enough information to GHC to be able to identify a concrete with which to get an
+  appropriate instance
+  + Don't use typeclasses to define default values
+    + Apparently Haskell ninjas will find you and replace your toothpaste with muddy
+      chalk
+
+#+BEGIN_SRC haskell
+class Numberish a where
+  fromNumber :: Integer -> a
+  toNumber :: a -> Integer
+  defaultNumber :: a
+
+instance Numberish Age where
+  fromNumber n = Age n
+  toNumber (Age n) = n
+  defaultNumber = Age 65
+
+instance Numberish Year where
+  fromNumber n = Year n
+  toNumber (Year n) = n
+  defaultNumber = Year 1988
+#+END_SRC
+
++ This is what happens when we do this in the REPL
+
+#+BEGIN_SRC
+No instance for (Show a0) arising
+    from a use of ‘print’
+The type variable ‘a0’ is ambiguous
+  Note: there are several potential instances:
+    instance Show a => Show (Maybe a)
+    instance Show Ordering
+    instance Show Integer
+       ...plus 24 others
+#+END_SRC
+
++ It fails because it doesn't know what type ~defaultNumber~ is other that it's
+  provided by ~Numberish~'s instance
++ You can sell specify a type like this
+
+#+BEGIN_SRC haskell
+Prelude> defaultNumber :: Age
+Age 65
+Prelude> defaultNumber :: Year
+Year 1988
+#+END_SRC
+
+#+BEGIN_SRC haskell
+addWeird :: Num a => a -> a -> a
+addWeird x y =
+  if x > 1
+  then x + y
+  else x
+#+END_SRC
+
++ This won't work because GHC could not deduce ~(Ord a)~ arising
+  from the use of '>'
++ Having a ~Num~ constraint isn't enough because it doesn't imply ~Ord~
++ So we have to change modify the typeclass like so ~(Ord a Num a) => a -> a -> a~
+
+#+BEGIN_SRC haskell
+add :: Int -> Int -> Int
+add x y = x + y
+
+addWeird :: Int -> Int -> Int
+addWeird x y =
+  if x > 1
+  then x + y
+  else x
+
+check' :: Int -> Int -> Bool
+check' a a' = a == a'
+#+END_SRC
+
++ These work because concrete types (~Int~ in this case) already imply all the
+  typeclasses they provide
++ In this case, ~Int~ already has the typeclasses of ~Num~, ~Eq~, and ~Ord~ implemented
++ Concrete types either have a typeclass instance or it doesn't
 * Exercises
 ** Page 272
     1.
