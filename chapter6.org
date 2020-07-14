@@ -831,3 +831,117 @@ quotRem, divMod :: Integral a => a -> a -> (a, a)
     3. ~compare "Julie" True~ does not work because it is comparing two arguments of
        different types, namely ~String~ and ~Bool~ respectively
     4. ~(5 + 3) > (3 + 6)~ evaluates to False because 8 is less than 9
+
+
+* Chapter Exercises
+** Multiple choice
+    1. The Eq class *makes equality tests possible*
+    2. The typeclass Ord *allows any two values to be compared*
+    3. ~> :: Ord a => a -> a -> Bool~
+    4. In ~x = divMod 16 12~ the value of x is a tuple
+    5. The typeclass Integral includes *Int and Integer numbers*
+
+** Does it typecheck?
+    1. Does not typecheck, fix:
+
+       #+BEGIN_SRC haskell
+data Person = Person Bool deriving Show
+
+printPerson :: Person -> IO ()
+printPerson person = putStrLn (show person)
+       #+END_SRC
+
+    2. Does not typecheck, fix:
+
+       #+BEGIN_SRC haskell
+data Mood = Blah | Woot deriving (Show, Eq)
+
+settleDown x = if x == Woot
+                  then Blah
+                  else x
+       #+END_SRC
+
+    3. I got ~settleDown~ to typecheck
+       a. Any values of type ~Mood~ are acceptable inputs (Blah, and Woot)
+       b. ~settleDown 9~ won't work because there is no instance of ~Num Mood~ from 9
+       c. ~Blah > Woot~ creates an error because ~Mood~ does not derive ~Ord~
+
+    4. Typechecks because ~Sentence~ derives ~Show~
+
+      #+BEGIN_SRC haskell
+type Subject = String
+type Verb = String
+type Object = String
+
+data Sentence =
+  Sentence Subject Verb Object
+  deriving (Eq, Show)
+
+s1 = Sentence "dogs" "drool"
+s2 = Sentence "Julie" "loves" "dogs"
+Given a datatype declaration, what
+      #+END_SRC
+
+** Given a datatype declaration, what can we do?
+    Given the following
+
+        #+BEGIN_SRC haskell
+data Rocks =
+  Rocks String deriving (Eq, Show)
+
+data Yeah =
+  Yeah Bool deriving (Eq, Show)
+
+data Papu =
+  Papu Rocks Yeah
+  deriving (Eq, Show)
+        #+END_SRC
+
+    1. ~phew = Papu "chases" True~ does not typecheck because the values
+       aren't of their respective types so it has to be ~phew = Papu (Rocks "chases") (Yeah True)~
+    2. ~truth = Papu (Rocks "chomskydoz") (Yeah True)~ typechecks
+    3. It typechecks
+
+       #+BEGIN_SRC haskell
+equalityForall :: Papu -> Papu -> Bool
+equalityForall p p' = p == p'
+       #+END_SRC
+
+    4. This does not typecheck because no ~Ord~
+
+      #+BEGIN_SRC haskell
+comparePapus :: Papu -> Papu -> Bool
+comparePapus p p' = p > p'
+      #+END_SRC
+
+** Match the types
+    1. Unable to substitute with the type ~a~ in ~i :: Num a => a~ because
+       1 has a type of ~Num a => a~
+    2. Unable to substitute with the type ~Num a => a~ in ~f :: Float~ because
+       floats are not instances of ~Num~
+    3. Can substitute with the type ~Fractional a => a~ in ~f :: Float~ because
+       ~1.0 :: Float~ is part of ~Fractional~
+    4. Can substitute with the type ~RealFrac a => a~ in ~f :: Float~ because
+       ~1.0 :: Float~ is part of ~RealFrac~
+    5. Can substitute with the type ~Ord a => a -> a~ in ~freud :: a -> a; freud x = x~
+    6. Can substitute with the type ~Int -> Int~ in ~freud :: Int -> Int; freud x = x~
+    7. Unable to substitute ~sigmund :: Int -> Int~ with ~a -> a~ because ~myX~ is
+       in the expression: ~myX = 1 :: Int~
+    8. Can substitute ~sigmund' :: Int -> Int~ with ~Num a => a -> a~
+    9. ~jung :: Ord a => [a] -> a~ can be replaced with ~jung :: [Int] -> Int~
+    10. ~jung :: Ord a => [a] -> a~ can be replaced with ~jung :: [Char] -> Char~
+    11. Can't replace ~signifier :: [Char] -> Char~ with ~Ord a => [a] -> a~ because
+        of ~mySort :: [Char] -> [Char]~
+
+** Type-Kwon-Do Two: Electric Typealoo
+    1.
+       #+BEGIN_SRC haskell
+chk :: Eq b => (a -> b) -> a -> b -> Bool
+chk f a b = if (f a) == b then True else False
+       #+END_SRC
+
+    2.
+       #+BEGIN_SRC haskell
+arith :: Num b => (a -> b) -> Integer -> a -> b
+arith f x a = (f a) + (f a)
+       #+END_SRC
