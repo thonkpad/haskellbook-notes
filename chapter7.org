@@ -1,0 +1,89 @@
+#+TITLE: More functional patterns
+
+[[file:README.org][Back to Prelude]]
+
+* Notes
+    + Functions are defined by the fact that they can be applied to an argument
+      and return a result
+    + You can use ~let~ expressions to declare and bind variables
+
+    #+BEGIN_SRC haskell
+bindExp :: Integer -> String
+bindExp x =
+  let y = 5 in
+    "the integer was: " ++ show x
+    ++ " and y was: " ++ show y
+    #+END_SRC
+
+    + /y/ was in scope because the ~let~ expression bound 5 to /y/, and it is
+      only in scope *within* the ~let~ expression
+    + This one is illegal
+
+    #+BEGIN_SRC haskell
+bindExp :: Integer -> String
+bindExp x =
+  let z = y + x in
+    let y = 5 in
+      "the integer was: "
+      ++ show x ++ " and y was: "
+      ++ show y ++ " and z was: "
+      ++ show z
+    #+END_SRC
+
+    + The compile error would be something like "Not in scope: 'y'"
+    + We are trying to bind /z/ to a value constructed from ~x~ and ~y~
+      + ~x~ is in scope since function arguments are visible anywhere within the function
+      + ~y~ is bound in a ~let~ expression nested within ~z~'s own let expression which
+        is not in scope of the function
+    + In some cases, function arguments are not visible in the function if they have
+      been shadowed
+
+    #+BEGIN_SRC haskell
+bindExp :: Integer -> String
+bindExp x =
+  let x = 10; y = 5 in
+    "the integer was: " ++ show x
+    ++ " and y was: " ++ show y
+    #+END_SRC
+
+    + Nothing changes still
+    + The reference to ~x~ arising from the argument ~x~ was shadowed by the other ~x~
+      in the ~let~ binding
+    + The ~x~ definition in the innermost code (the function name at the left margin
+      is /outside/) takes precedence because Haskell is *lexically scoped*
+    + Lexical scoping means that resolving the value for a named entity depends
+      on the location in the code and lexical context, such as in a ~let~ or ~where~
+      clause
+
+    #+BEGIN_SRC haskell
+bindExp :: Integer -> String
+bindExp x = let x = 10
+                y = 15
+            in "x: " ++ show x
+               ++ " y:" ++ show y
+    #+END_SRC
+
+    + The function parameter ~x~ declared in the definition of ~bindExp~ gets
+       shadowed/overridden by the ~x~ in the let binding because of lexical scoping
+    + Another example of lexical scoping but within the confines of GHCi
+
+    #+BEGIN_SRC haskell
+Prelude> let x = 5
+Prelude> let y = x + 5
+Prelude> y
+10
+Prelude> y * 10
+100
+Prelude> let z y = y * 10
+Prelude> x
+5
+Prelude> y
+10
+Prelude> z 9
+90
+-- but
+Prelude> z y
+100
+    #+END_SRC
+
+    + Since ~y~ was declared to be 10 by default (via ~x + 5~), running ~z y~ gives 100
